@@ -98,3 +98,9 @@ def getCookie(cursor) -> None:
             data.append([url, name, cookie])
 
     resOut(data, 'Cookie')
+
+
+if __name__ == '__main__':
+    getInfo()
+    getHistory()
+    getCookie()
